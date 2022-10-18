@@ -12,7 +12,7 @@ namespace backend.Models
         public Facultad()
         {
             Alumnos = new HashSet<Alumno>();
-            Profesors = new HashSet<Profesors>();
+            Profesors = new HashSet<Profesor>();
         }
 
         [Key]
@@ -26,6 +26,6 @@ namespace backend.Models
         [InverseProperty("IdDeptNavigation")]
         public virtual ICollection<Alumno> Alumnos { get; set; }
         [InverseProperty("IdDeptNavigation")]
-        public virtual ICollection<Profesors> Profesors { get; set; }
+        public virtual ICollection<Profesor> Profesors { get; set; }
     }
 }

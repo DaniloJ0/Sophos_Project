@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Models
@@ -11,6 +12,7 @@ namespace backend.Models
     {
         public Alumno()
         {
+            CursosRealizados = new HashSet<CursosRealizado>();
             MatriculaAlumnos = new HashSet<MatriculaAlumno>();
         }
 
@@ -29,15 +31,13 @@ namespace backend.Models
         public int CredtDisp { get; set; }
         [Column("id_dept")]
         public int IdDept { get; set; }
-        [Column("id_curso_realizado")]
-        public int? IdCursoRealizado { get; set; }
 
-        [ForeignKey("IdCursoRealizado")]
-        [InverseProperty("Alumnos")]
-        public virtual CursosRealizado? IdCursoRealizadoNavigation { get; set; }
         [ForeignKey("IdDept")]
         [InverseProperty("Alumnos")]
-        public virtual Facultad IdDeptNavigation { get; set; } = null!;
+        [JsonIgnore]
+        public virtual Facultad? IdDeptNavigation { get; set; } = null!;
+        [InverseProperty("IdAlumnoNavigation")]
+        public virtual ICollection<CursosRealizado> CursosRealizados { get; set; }
         [InverseProperty("IdAlumnoNavigation")]
         public virtual ICollection<MatriculaAlumno> MatriculaAlumnos { get; set; }
     }

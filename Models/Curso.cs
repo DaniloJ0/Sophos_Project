@@ -34,10 +34,10 @@ namespace backend.Models
 
         [ForeignKey("IdPeriodo")]
         [InverseProperty("Cursos")]
-        public virtual Periodo? IdPeriodoNavigation { get; set; } = null!;
+        public virtual Periodo IdPeriodoNavigation { get; set; } = null!;
         [ForeignKey("IdProfesor")]
         [InverseProperty("Cursos")]
-        public virtual Profesors? IdProfesorNavigation { get; set; } = null!;
+        public virtual Profesor IdProfesorNavigation { get; set; } = null!;
         [InverseProperty("IdCursoNavigation")]
         public virtual ICollection<MatriculaAlumno> MatriculaAlumnos { get; set; }
     }

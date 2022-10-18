@@ -9,11 +9,6 @@ namespace backend.Models
     [Table("cursos_realizados")]
     public partial class CursosRealizado
     {
-        public CursosRealizado()
-        {
-            Alumnos = new HashSet<Alumno>();
-        }
-
         [Key]
         [Column("id")]
         public int Id { get; set; }
@@ -22,7 +17,8 @@ namespace backend.Models
         [Column("id_curso")]
         public int IdCurso { get; set; }
 
-        [InverseProperty("IdCursoRealizadoNavigation")]
-        public virtual ICollection<Alumno> Alumnos { get; set; }
+        [ForeignKey("IdAlumno")]
+        [InverseProperty("CursosRealizados")]
+        public virtual Alumno IdAlumnoNavigation { get; set; } = null!;
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Models
@@ -25,6 +26,7 @@ namespace backend.Models
         public int Semestre { get; set; }
 
         [InverseProperty("IdPeriodoNavigation")]
+        [JsonIgnore]
         public virtual ICollection<Curso> Cursos { get; set; }
     }
 }

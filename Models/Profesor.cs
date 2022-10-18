@@ -8,9 +8,9 @@ using Microsoft.EntityFrameworkCore;
 namespace backend.Models
 {
     [Table("profesor")]
-    public partial class Profesors
+    public partial class Profesor
     {
-        public Profesors()
+        public Profesor()
         {
             Cursos = new HashSet<Curso>();
         }

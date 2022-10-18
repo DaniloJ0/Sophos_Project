@@ -29,17 +29,20 @@ namespace backend.Controllers
         //}
 
 
-    [HttpGet]
-    public IActionResult Profesores(){
-            List<Profesors> profesores = new List<Profesors>();
-            try{
-                profesores= _context.Profesors.ToList();
+        [HttpGet]
+        public IActionResult Profesores()
+        {
+            List<Profesor> profesores = new List<Profesor>();
+            try
+            {
+                profesores = _context.Profesors.ToList();
                 return StatusCode(StatusCodes.Status200OK, new { mensaje = "ok", response = profesores });
             }
-            catch(Exception ex){
-               return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message, response = profesores });
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message, response = profesores });
             }
-       }
+        }
 
         [HttpGet]
         [Route("Cursos")]
@@ -49,7 +52,7 @@ namespace backend.Controllers
             try
             {
                 cursos = _context.Cursos.Where(x => x.IdProfesor == 2).ToList();
-                return StatusCode(StatusCodes.Status200OK, cursos );
+                return StatusCode(StatusCodes.Status200OK, cursos);
             }
             catch (Exception ex)
             {
@@ -59,7 +62,7 @@ namespace backend.Controllers
 
         // GET: api/Profesores/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Profesors>> GetProfesor(int id)
+        public async Task<ActionResult<Profesor>> GetProfesor(int id)
         {
             var profesor = await _context.Profesors.FindAsync(id);
 
@@ -74,14 +77,14 @@ namespace backend.Controllers
         // PUT: api/Profesores/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProfesor(int id, Profesors profesor)
+        public async Task<IActionResult> PutProfesor(int id, Profesor profesor)
         {
             if (id != profesor.Id)
             {
                 return BadRequest("Profesor no encontrado");
             }
 
-           _context.Entry(profesor).State = EntityState.Modified;
+            _context.Entry(profesor).State = EntityState.Modified;
 
             try
             {
@@ -115,7 +118,7 @@ namespace backend.Controllers
         //}
 
         [HttpPost]
-        public IActionResult Guardar([FromBody] Profesors prof)
+        public IActionResult Guardar([FromBody] Profesor prof)
         {
             try
             {
