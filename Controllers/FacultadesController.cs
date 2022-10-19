@@ -12,11 +12,11 @@ namespace backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class FacultadsController : ControllerBase
+    public class FacultadesController : ControllerBase
     {
         private readonly AppDbContext _context;
 
-        public FacultadsController(AppDbContext context)
+        public FacultadesController(AppDbContext context)
         {
             _context = context;
         }

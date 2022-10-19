@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Models
@@ -19,6 +20,7 @@ namespace backend.Models
 
         [ForeignKey("IdAlumno")]
         [InverseProperty("CursosRealizados")]
-        public virtual Alumno IdAlumnoNavigation { get; set; } = null!;
+        [JsonIgnore]
+        public virtual Alumno? IdAlumnoNavigation { get; set; } = null!;
     }
 }

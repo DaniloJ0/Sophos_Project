@@ -23,9 +23,17 @@ namespace backend.Controllers
 
         // GET: api/CursosRealizados
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CursosRealizado>>> GetCursosRealizados()
+        public async Task<ActionResult<IEnumerable<CursosRealizado>>> CursosRealizados()
         {
-            return await _context.CursosRealizados.ToListAsync();
+            try
+            {
+                var cursosRealizado = await _context.CursosRealizados.ToListAsync();
+                return StatusCode(StatusCodes.Status200OK, cursosRealizado);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status501NotImplemented, new { mensaje = ex.Message });
+            }
         }
 
         // GET: api/CursosRealizados/5
@@ -40,6 +48,25 @@ namespace backend.Controllers
             }
 
             return cursosRealizado;
+        }
+
+        [HttpGet]
+        [Route("Alumno/{id:int}")]
+        public async Task<ActionResult<CursosRealizado>> GetCursosRealizadoAlumno(int id)
+        {
+            List<CursosRealizado> cursosRealizado = new List<CursosRealizado>();
+            try
+            {
+                cursosRealizado = await _context.CursosRealizados.Where(x => x.IdAlumno == id).ToListAsync();
+
+                return StatusCode(StatusCodes.Status200OK, cursosRealizado);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status501NotImplemented, new { mensaje = ex.Message });
+            }
+
+
         }
 
         // PUT: api/CursosRealizados/5
@@ -78,10 +105,22 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<ActionResult<CursosRealizado>> PostCursosRealizado(CursosRealizado cursosRealizado)
         {
-            _context.CursosRealizados.Add(cursosRealizado);
-            await _context.SaveChangesAsync();
+            var alumno = await _context.Alumnos.FindAsync(cursosRealizado.IdAlumno);
+            if (alumno == null) return NotFound("El alumno no existe");
 
-            return CreatedAtAction("GetCursosRealizado", new { id = cursosRealizado.Id }, cursosRealizado);
+            var curso = await _context.Cursos.FindAsync(cursosRealizado.IdAlumno);
+            if (curso == null) return NotFound("El Curso no existe");
+
+            try
+            {
+                _context.CursosRealizados.Add(cursosRealizado);
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status501NotImplemented, new { mensaje = ex.Message });
+            }
         }
 
         // DELETE: api/CursosRealizados/5
@@ -93,13 +132,17 @@ namespace backend.Controllers
             {
                 return NotFound();
             }
-
-            _context.CursosRealizados.Remove(cursosRealizado);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            try
+            {
+                _context.CursosRealizados.Remove(cursosRealizado);
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status501NotImplemented, new { mensaje = ex.Message });
+            }
         }
-
         private bool CursosRealizadoExists(int id)
         {
             return _context.CursosRealizados.Any(e => e.Id == id);
