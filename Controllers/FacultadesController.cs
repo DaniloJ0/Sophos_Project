@@ -21,36 +21,43 @@ namespace backend.Controllers
             _context = context;
         }
 
-        // GET: api/Facultads
+        // GET: api/Facultades
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Facultad>>> GetFacultads()
         {
-            return await _context.Facultads.ToListAsync();
+            try
+            {
+                var facultades = await _context.Facultads.ToListAsync();
+                return StatusCode(StatusCodes.Status200OK, facultades);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
+            }
         }
 
-        // GET: api/Facultads/5
+        // GET: api/Facultades/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Facultad>> GetFacultad(int id)
         {
-            var facultad = await _context.Facultads.FindAsync(id);
-
-            if (facultad == null)
+            try
             {
-                return NotFound();
-            }
+                var facultad = await _context.Facultads.FindAsync(id);
+                if (facultad == null) return NotFound();
 
-            return facultad;
+                return StatusCode(StatusCodes.Status200OK, facultad);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
+            }
         }
 
-        // PUT: api/Facultads/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // PUT: api/Facultades/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutFacultad(int id, Facultad facultad)
         {
-            if (id != facultad.Id)
-            {
-                return BadRequest();
-            }
+            if (id != facultad.Id) return BadRequest();
 
             _context.Entry(facultad).State = EntityState.Modified;
 
@@ -70,34 +77,41 @@ namespace backend.Controllers
                 }
             }
 
-            return NoContent();
+            return StatusCode(StatusCodes.Status202Accepted);
         }
 
-        // POST: api/Facultads
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // POST: api/Facultades
         [HttpPost]
         public async Task<ActionResult<Facultad>> PostFacultad(Facultad facultad)
         {
-            _context.Facultads.Add(facultad);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetFacultad", new { id = facultad.Id }, facultad);
+            try
+            {
+                _context.Facultads.Add(facultad);
+                await _context.SaveChangesAsync();
+                return StatusCode(StatusCodes.Status201Created);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status501NotImplemented, new { mensaje = ex.Message });
+            }
         }
 
-        // DELETE: api/Facultads/5
+        // DELETE: api/Facultades/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFacultad(int id)
         {
             var facultad = await _context.Facultads.FindAsync(id);
-            if (facultad == null)
+            if (facultad == null) return NotFound();
+            try
             {
-                return NotFound();
+                _context.Facultads.Remove(facultad);
+                await _context.SaveChangesAsync();
+                return NoContent();
             }
-
-            _context.Facultads.Remove(facultad);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
+            }
         }
 
         private bool FacultadExists(int id)

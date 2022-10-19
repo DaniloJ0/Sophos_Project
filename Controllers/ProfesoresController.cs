@@ -124,7 +124,7 @@ namespace backend.Controllers
             {
                 _context.Profesors.Add(prof);
                 _context.SaveChanges();
-                return StatusCode(StatusCodes.Status200OK, new { mensaje = "ok" });
+                return StatusCode(StatusCodes.Status201Created, new { mensaje = "ok" });
             }
             catch (Exception ex)
             {
@@ -144,11 +144,18 @@ namespace backend.Controllers
             {
                 return NotFound();
             }
+            try
+            {
+                _context.Profesors.Remove(profesor);
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status501NotImplemented, new { mensaje = ex.Message });
+            }
 
-            _context.Profesors.Remove(profesor);
-            await _context.SaveChangesAsync();
 
-            return NoContent();
         }
 
         private bool ProfesorExists(int id)

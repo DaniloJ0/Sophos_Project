@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Models
@@ -24,8 +25,10 @@ namespace backend.Models
         public string Name { get; set; } = null!;
 
         [InverseProperty("IdDeptNavigation")]
+        [JsonIgnore]
         public virtual ICollection<Alumno> Alumnos { get; set; }
         [InverseProperty("IdDeptNavigation")]
+        [JsonIgnore]
         public virtual ICollection<Profesor> Profesors { get; set; }
     }
 }
