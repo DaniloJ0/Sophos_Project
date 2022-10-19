@@ -37,8 +37,10 @@ namespace backend.Models
         [JsonIgnore]
         public virtual Facultad? IdDeptNavigation { get; set; } = null!;
         [InverseProperty("IdAlumnoNavigation")]
+        [JsonIgnore]
         public virtual ICollection<CursosRealizado> CursosRealizados { get; set; }
         [InverseProperty("IdAlumnoNavigation")]
+        [JsonIgnore]
         public virtual ICollection<MatriculaAlumno> MatriculaAlumnos { get; set; }
     }
 }

@@ -52,7 +52,7 @@ namespace backend.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
             }
         }
-
+        // GET: api/CursosRealizados/Alumno/5
         [HttpGet]
         [Route("Alumno/{id:int}")]
         public async Task<ActionResult<CursosRealizado>> GetCursosRealizadoAlumno(int id)
