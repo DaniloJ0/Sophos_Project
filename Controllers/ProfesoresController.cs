@@ -54,6 +54,8 @@ namespace backend.Controllers
         public async Task<IActionResult> PutProfesor(int id, Profesor profesor)
         {
             if (id != profesor.Id) return BadRequest("Profesor no encontrado");
+            var facultad = await _context.Facultads.FindAsync(profesor.IdDept);
+            if (facultad == null) return NotFound("El Id de la facultad no existe");
 
             _context.Entry(profesor).State = EntityState.Modified;
 

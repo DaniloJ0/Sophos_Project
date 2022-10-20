@@ -27,6 +27,10 @@ namespace backend.Models
         [StringLength(25)]
         [Unicode(false)]
         public string Apellido { get; set; } = null!;
+
+        [Column("semestre")]
+        public int? Semestre { get; set; }
+
         [Column("credt_disp")]
         public int CredtDisp { get; set; }
         [Column("id_dept")]

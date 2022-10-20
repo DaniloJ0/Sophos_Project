@@ -47,7 +47,7 @@ namespace backend.Controllers
                 var cursosMatriculados = await _context.MatriculaAlumnos.Where(x => x.IdAlumno == id).ToListAsync();
                 var cursosRealizados = await _context.CursosRealizados.Where(x => x.IdAlumno == id).ToListAsync();
                 var departamento = _context.Facultads.Where(x => x.Id == alumno.IdDept).First().Name;
-                var datos = new { alumno.Nombre, alumno.Apellido, alumno.CredtDisp, departamento, cursosMatriculados, cursosRealizados };
+                var datos = new { alumno.Nombre, alumno.Apellido, alumno.Semestre, alumno.CredtDisp, departamento, cursosMatriculados, cursosRealizados };
                 return StatusCode(StatusCodes.Status200OK, datos);
             }
             catch (Exception ex)
@@ -61,6 +61,9 @@ namespace backend.Controllers
         public async Task<IActionResult> PutAlumno(int id, Alumno alumno)
         {
             if (id != alumno.Id) return BadRequest();
+            var facultad = await _context.Facultads.FindAsync(alumno.IdDept);
+            if (facultad == null) return NotFound("El Id de la facultad no existe");
+
             _context.Entry(alumno).State = EntityState.Modified;
             try
             {
