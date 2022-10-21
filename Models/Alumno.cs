@@ -27,6 +27,10 @@ namespace backend.Models
         [StringLength(25)]
         [Unicode(false)]
         public string Apellido { get; set; } = null!;
+
+        [Column("semestre")]
+        public int? Semestre { get; set; }
+
         [Column("credt_disp")]
         public int CredtDisp { get; set; }
         [Column("id_dept")]
@@ -37,8 +41,10 @@ namespace backend.Models
         [JsonIgnore]
         public virtual Facultad? IdDeptNavigation { get; set; } = null!;
         [InverseProperty("IdAlumnoNavigation")]
+        [JsonIgnore]
         public virtual ICollection<CursosRealizado> CursosRealizados { get; set; }
         [InverseProperty("IdAlumnoNavigation")]
+        [JsonIgnore]
         public virtual ICollection<MatriculaAlumno> MatriculaAlumnos { get; set; }
     }
 }

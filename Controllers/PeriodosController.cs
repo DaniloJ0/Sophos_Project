@@ -25,21 +25,30 @@ namespace backend.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Periodo>>> GetPeriodos()
         {
-            return await _context.Periodos.ToListAsync();
+            try
+            {
+                return await _context.Periodos.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
+            }
         }
 
         // GET: api/Periodos/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Periodo>> GetPeriodo(int id)
         {
-            var periodo = await _context.Periodos.FindAsync(id);
-
-            if (periodo == null)
+            try
             {
-                return NotFound();
+                var periodo = await _context.Periodos.FindAsync(id);
+                if (periodo == null) return NotFound();
+                return StatusCode(StatusCodes.Status200OK, periodo);
             }
-
-            return periodo;
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status501NotImplemented, new { mensaje = ex.Message });
+            }
         }
 
         // PUT: api/Periodos/5
@@ -47,13 +56,8 @@ namespace backend.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPeriodo(int id, Periodo periodo)
         {
-            if (id != periodo.Id)
-            {
-                return BadRequest();
-            }
-
+            if (id != periodo.Id) return BadRequest();
             _context.Entry(periodo).State = EntityState.Modified;
-
             try
             {
                 await _context.SaveChangesAsync();
@@ -78,10 +82,16 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<ActionResult<Periodo>> PostPeriodo(Periodo periodo)
         {
-            _context.Periodos.Add(periodo);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetPeriodo", new { id = periodo.Id }, periodo);
+            try
+            {
+                _context.Periodos.Add(periodo);
+                await _context.SaveChangesAsync();
+                return StatusCode(StatusCodes.Status201Created);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status501NotImplemented, new { mensaje = ex.Message });
+            }
         }
 
         // DELETE: api/Periodos/5
@@ -89,15 +99,17 @@ namespace backend.Controllers
         public async Task<IActionResult> DeletePeriodo(int id)
         {
             var periodo = await _context.Periodos.FindAsync(id);
-            if (periodo == null)
+            if (periodo == null) return NotFound();
+            try
             {
-                return NotFound();
+                _context.Periodos.Remove(periodo);
+                await _context.SaveChangesAsync();
+                return NoContent();
             }
-
-            _context.Periodos.Remove(periodo);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
+            }
         }
 
         private bool PeriodoExists(int id)

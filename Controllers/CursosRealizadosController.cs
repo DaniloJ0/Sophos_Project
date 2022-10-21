@@ -40,16 +40,19 @@ namespace backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<CursosRealizado>> GetCursosRealizado(int id)
         {
-            var cursosRealizado = await _context.CursosRealizados.FindAsync(id);
-
-            if (cursosRealizado == null)
+            try
             {
-                return NotFound();
+                var cursosRealizado = await _context.CursosRealizados.FindAsync(id);
+                if (cursosRealizado == null) return NotFound();
+
+                return StatusCode(StatusCodes.Status200OK, cursosRealizado);
             }
-
-            return cursosRealizado;
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
+            }
         }
-
+        // GET: api/CursosRealizados/Alumno/5
         [HttpGet]
         [Route("Alumno/{id:int}")]
         public async Task<ActionResult<CursosRealizado>> GetCursosRealizadoAlumno(int id)
@@ -115,7 +118,7 @@ namespace backend.Controllers
             {
                 _context.CursosRealizados.Add(cursosRealizado);
                 await _context.SaveChangesAsync();
-                return Ok();
+                return StatusCode(StatusCodes.Status201Created);
             }
             catch (Exception ex)
             {

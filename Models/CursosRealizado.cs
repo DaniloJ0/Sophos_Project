@@ -21,6 +21,6 @@ namespace backend.Models
         [ForeignKey("IdAlumno")]
         [InverseProperty("CursosRealizados")]
         [JsonIgnore]
-        public virtual Alumno? IdAlumnoNavigation { get; set; } = null!;
+        public virtual Alumno? IdAlumnoNavigation { get; set; }
     }
 }

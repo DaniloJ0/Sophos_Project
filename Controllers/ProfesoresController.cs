@@ -21,68 +21,41 @@ namespace backend.Controllers
             _context = context;
         }
 
-        // GET: api/Profesores
-        //[HttpGet]
-        //public async Task<ActionResult<IEnumerable<Profesor>>>  GetProfesors()
-        //{
-        //    return await _context.Profesors.ToListAsync();
-        //}
-
-
+        //GET: api/Profesores
         [HttpGet]
-        public IActionResult Profesores()
+        public async Task<ActionResult<IEnumerable<Profesor>>> GetProfesors()
         {
-            List<Profesor> profesores = new List<Profesor>();
             try
             {
-                profesores = _context.Profesors.ToList();
-                return StatusCode(StatusCodes.Status200OK, new { mensaje = "ok", response = profesores });
+                return await _context.Profesors.ToListAsync();
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message, response = profesores });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
             }
         }
 
-        [HttpGet]
-        [Route("Cursos")]
-        public IActionResult ProfesoresCursos()
-        {
-            List<Curso> cursos = new List<Curso>();
-            try
-            {
-                cursos = _context.Cursos.Where(x => x.IdProfesor == 2).ToList();
-                return StatusCode(StatusCodes.Status200OK, cursos);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message, response = cursos });
-            }
-        }
 
         // GET: api/Profesores/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Profesor>> GetProfesor(int id)
         {
             var profesor = await _context.Profesors.FindAsync(id);
-
-            if (profesor == null)
-            {
-                return NotFound();
-            }
-
-            return profesor;
+            if (profesor == null) return NotFound();
+            var cursos = await _context.Cursos.Where(x => x.IdProfesor == 2).ToListAsync();
+            var datos = new { profesor, cursos };
+            return StatusCode(StatusCodes.Status200OK, datos);
         }
+
 
         // PUT: api/Profesores/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProfesor(int id, Profesor profesor)
         {
-            if (id != profesor.Id)
-            {
-                return BadRequest("Profesor no encontrado");
-            }
+            if (id != profesor.Id) return BadRequest("Profesor no encontrado");
+            var facultad = await _context.Facultads.FindAsync(profesor.IdDept);
+            if (facultad == null) return NotFound("El Id de la facultad no existe");
 
             _context.Entry(profesor).State = EntityState.Modified;
 
@@ -106,49 +79,42 @@ namespace backend.Controllers
         }
 
 
-        // POST: api/Profesores
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        //[HttpPost]
-        //public async Task<ActionResult<Profesors>> PostProfesor(Profesors profesor)
-        //{
-        //    _context.Profesors.Add(profesor);
-        //    await _context.SaveChangesAsync();
-
-        //    return CreatedAtAction("GetProfesor", new { id = profesor.Id }, profesor);
-        //}
-
+        //POST: api/Profesores
         [HttpPost]
-        public IActionResult Guardar([FromBody] Profesor prof)
+        public async Task<ActionResult<Profesor>> PostProfesor(Profesor profesor)
         {
+            var facultad = await _context.Facultads.FindAsync(profesor.IdDept);
+            if (facultad == null) return NotFound("El Id de la facultad no existe");
             try
             {
-                _context.Profesors.Add(prof);
-                _context.SaveChanges();
-                return StatusCode(StatusCodes.Status200OK, new { mensaje = "ok" });
+                _context.Profesors.Add(profesor);
+                await _context.SaveChangesAsync();
+                return StatusCode(StatusCodes.Status201Created);
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
+                return StatusCode(StatusCodes.Status501NotImplemented, new { mensaje = ex.Message });
             }
         }
-
-
-
 
         // DELETE: api/Profesores/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProfesor(int id)
         {
             var profesor = await _context.Profesors.FindAsync(id);
-            if (profesor == null)
+            if (profesor == null) return NotFound();
+            try
             {
-                return NotFound();
+                _context.Profesors.Remove(profesor);
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status501NotImplemented, new { mensaje = ex.Message });
             }
 
-            _context.Profesors.Remove(profesor);
-            await _context.SaveChangesAsync();
 
-            return NoContent();
         }
 
         private bool ProfesorExists(int id)

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using backend.DBContext;
 using backend.Models;
+using System.Linq.Expressions;
 
 namespace backend.Controllers
 {
@@ -25,35 +26,39 @@ namespace backend.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MatriculaAlumno>>> GetMatriculaAlumnos()
         {
-            return await _context.MatriculaAlumnos.ToListAsync();
+            try
+            {
+                return await _context.MatriculaAlumnos.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
+            }
         }
 
         // GET: api/MatriculaAlumnos/5
         [HttpGet("{id}")]
         public async Task<ActionResult<MatriculaAlumno>> GetMatriculaAlumno(int id)
         {
-            var matriculaAlumno = await _context.MatriculaAlumnos.FindAsync(id);
-
-            if (matriculaAlumno == null)
+            try
             {
-                return NotFound();
+                var matriculaAlumno = await _context.MatriculaAlumnos.FindAsync(id);
+                if (matriculaAlumno == null) return NotFound();
+                return matriculaAlumno;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
             }
 
-            return matriculaAlumno;
         }
 
         // PUT: api/MatriculaAlumnos/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutMatriculaAlumno(int id, MatriculaAlumno matriculaAlumno)
         {
-            if (id != matriculaAlumno.Id)
-            {
-                return BadRequest();
-            }
-
+            if (id != matriculaAlumno.Id) return BadRequest();
             _context.Entry(matriculaAlumno).State = EntityState.Modified;
-
             try
             {
                 await _context.SaveChangesAsync();
@@ -74,10 +79,26 @@ namespace backend.Controllers
         }
 
         // POST: api/MatriculaAlumnos
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<MatriculaAlumno>> PostMatriculaAlumno(MatriculaAlumno matriculaAlumno)
         {
+            var alumno = await _context.Alumnos.FindAsync(matriculaAlumno.IdAlumno);
+            if (alumno == null) return NotFound("El alumno no existe");
+
+            var curso = await _context.Cursos.FindAsync(matriculaAlumno.IdCurso);
+            if (curso == null) return NotFound("El Curso no existe");
+
+            //Verificacion si se encuentra matriculado
+            var verificacionMatricula = _context.MatriculaAlumnos.Where(x => x.IdCurso == matriculaAlumno.IdCurso && x.IdAlumno == matriculaAlumno.IdAlumno);
+            if (verificacionMatricula == null) return Conflict("El alumno ya se encuentra matriculado");
+
+            //Verificacion de Pre-Requisito de curso
+            if (curso.IdCursoPre != null)
+            {
+                var validarPreCurso = _context.CursosRealizados.Where(x => x.IdCurso == matriculaAlumno.IdCurso && x.IdAlumno == matriculaAlumno.IdAlumno);
+                if (validarPreCurso == null) return Conflict("El alumno no ha realizado el curso pre-requisito de " + curso.Nombre);
+            }
+
             _context.MatriculaAlumnos.Add(matriculaAlumno);
             try
             {
@@ -95,23 +116,53 @@ namespace backend.Controllers
                 }
             }
 
-            return CreatedAtAction("GetMatriculaAlumno", new { id = matriculaAlumno.Id }, matriculaAlumno);
+            return StatusCode(StatusCodes.Status201Created);
         }
 
-        // DELETE: api/MatriculaAlumnos/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMatriculaAlumno(int id)
+        // DELETE: api/MatriculaAlumnos/Completado/5
+        [HttpDelete("Completado/{id}")]
+        public async Task<IActionResult> DeleteMatriculaAlumnoCompletada(int id)
         {
             var matriculaAlumno = await _context.MatriculaAlumnos.FindAsync(id);
-            if (matriculaAlumno == null)
+            if (matriculaAlumno == null) return NotFound();
+            try
             {
-                return NotFound();
+                // Add Course Done in CursosRealizados
+                CursosRealizado cursosRealizado = new()
+                {
+                    IdCurso = matriculaAlumno.IdCurso,
+                    IdAlumno = matriculaAlumno.IdAlumno
+                };
+
+                _context.CursosRealizados.Add(cursosRealizado);
+                _context.MatriculaAlumnos.Remove(matriculaAlumno);
+
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
             }
 
-            _context.MatriculaAlumnos.Remove(matriculaAlumno);
-            await _context.SaveChangesAsync();
+        }
 
-            return NoContent();
+        // DELETE: api/MatriculaAlumnos/Realizado/5
+        [HttpDelete("Realizado/{id}")]
+        public async Task<IActionResult> DeleteMatriculaAlumnoRetirada(int id)
+        {
+            var matriculaAlumno = await _context.MatriculaAlumnos.FindAsync(id);
+            if (matriculaAlumno == null) return NotFound();
+            try
+            {
+                _context.MatriculaAlumnos.Remove(matriculaAlumno);
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
+            }
         }
 
         private bool MatriculaAlumnoExists(int id)

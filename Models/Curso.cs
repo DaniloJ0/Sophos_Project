@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Models
@@ -34,11 +35,14 @@ namespace backend.Models
 
         [ForeignKey("IdPeriodo")]
         [InverseProperty("Cursos")]
+        [JsonIgnore]
         public virtual Periodo IdPeriodoNavigation { get; set; } = null!;
         [ForeignKey("IdProfesor")]
         [InverseProperty("Cursos")]
+        [JsonIgnore]
         public virtual Profesor IdProfesorNavigation { get; set; } = null!;
         [InverseProperty("IdCursoNavigation")]
+        [JsonIgnore]
         public virtual ICollection<MatriculaAlumno> MatriculaAlumnos { get; set; }
     }
 }

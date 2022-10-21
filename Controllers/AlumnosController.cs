@@ -25,7 +25,14 @@ namespace backend.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Alumno>>> GetAlumnos()
         {
-            return await _context.Alumnos.ToListAsync();
+            try
+            {
+                return await _context.Alumnos.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
+            }
         }
 
         // GET: api/Alumnos/5
@@ -33,27 +40,31 @@ namespace backend.Controllers
         public async Task<ActionResult<Alumno>> GetAlumno(int id)
         {
             var alumno = await _context.Alumnos.FindAsync(id);
+            if (alumno == null) return NotFound();
 
-            if (alumno == null)
+            try
             {
-                return NotFound();
+                var cursosMatriculados = await _context.MatriculaAlumnos.Where(x => x.IdAlumno == id).ToListAsync();
+                var cursosRealizados = await _context.CursosRealizados.Where(x => x.IdAlumno == id).ToListAsync();
+                var departamento = _context.Facultads.Where(x => x.Id == alumno.IdDept).First().Name;
+                var datos = new { alumno.Nombre, alumno.Apellido, alumno.Semestre, alumno.CredtDisp, departamento, cursosMatriculados, cursosRealizados };
+                return StatusCode(StatusCodes.Status200OK, datos);
             }
-
-            return alumno;
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
+            }
         }
 
         // PUT: api/Alumnos/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAlumno(int id, Alumno alumno)
         {
-            if (id != alumno.Id)
-            {
-                return BadRequest();
-            }
+            if (id != alumno.Id) return BadRequest();
+            var facultad = await _context.Facultads.FindAsync(alumno.IdDept);
+            if (facultad == null) return NotFound("El Id de la facultad no existe");
 
             _context.Entry(alumno).State = EntityState.Modified;
-
             try
             {
                 await _context.SaveChangesAsync();
@@ -69,19 +80,25 @@ namespace backend.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 
         // POST: api/Alumnos
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Alumno>> PostAlumno(Alumno alumno)
         {
-            _context.Alumnos.Add(alumno);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetAlumno", new { id = alumno.Id }, alumno);
+            var facultad = await _context.Facultads.FindAsync(alumno.IdDept);
+            if (facultad == null) return NotFound("El Id de la facultad no existe");
+            try
+            {
+                _context.Alumnos.Add(alumno);
+                await _context.SaveChangesAsync();
+                return StatusCode(StatusCodes.Status201Created);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status501NotImplemented, new { mensaje = ex.Message });
+            }
         }
 
         // DELETE: api/Alumnos/5
@@ -89,15 +106,18 @@ namespace backend.Controllers
         public async Task<IActionResult> DeleteAlumno(int id)
         {
             var alumno = await _context.Alumnos.FindAsync(id);
-            if (alumno == null)
+            if (alumno == null) return NotFound();
+            try
             {
-                return NotFound();
+                _context.Alumnos.Remove(alumno);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
-
-            _context.Alumnos.Remove(alumno);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status501NotImplemented, new { mensaje = ex.Message });
+            }
         }
 
         private bool AlumnoExists(int id)
