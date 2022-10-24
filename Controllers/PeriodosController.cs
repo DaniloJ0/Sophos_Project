@@ -42,8 +42,8 @@ namespace backend.Controllers
             try
             {
                 var periodo = await _context.Periodos.FindAsync(id);
-                if (periodo == null) return NotFound();
-                return StatusCode(StatusCodes.Status200OK, periodo);
+                if (periodo == null) return NotFound("Periodo no encontrado");
+                return Ok(periodo);
             }
             catch (Exception ex)
             {

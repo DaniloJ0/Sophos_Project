@@ -13,6 +13,8 @@ namespace backend.Models
         public Curso()
         {
             MatriculaAlumnos = new HashSet<MatriculaAlumno>();
+            //add
+            CursosRealizados = new HashSet<CursosRealizado>();
         }
 
         [Key]
@@ -35,14 +37,17 @@ namespace backend.Models
 
         [ForeignKey("IdPeriodo")]
         [InverseProperty("Cursos")]
-        [JsonIgnore]
         public virtual Periodo IdPeriodoNavigation { get; set; } = null!;
         [ForeignKey("IdProfesor")]
         [InverseProperty("Cursos")]
-        [JsonIgnore]
         public virtual Profesor IdProfesorNavigation { get; set; } = null!;
+
+        [InverseProperty("IdCursoNavigation")]
+        public virtual ICollection<MatriculaAlumno> MatriculaAlumnos { get; set; }
+
+        //add
         [InverseProperty("IdCursoNavigation")]
         [JsonIgnore]
-        public virtual ICollection<MatriculaAlumno> MatriculaAlumnos { get; set; }
+        public virtual ICollection<CursosRealizado> CursosRealizados { get; set; }
     }
 }

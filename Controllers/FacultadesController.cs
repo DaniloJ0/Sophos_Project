@@ -28,7 +28,7 @@ namespace backend.Controllers
             try
             {
                 var facultades = await _context.Facultads.ToListAsync();
-                return StatusCode(StatusCodes.Status200OK, facultades);
+                return Ok(facultades);
             }
             catch (Exception ex)
             {
@@ -44,8 +44,7 @@ namespace backend.Controllers
             {
                 var facultad = await _context.Facultads.FindAsync(id);
                 if (facultad == null) return NotFound();
-
-                return StatusCode(StatusCodes.Status200OK, facultad);
+                return Ok(facultad);
             }
             catch (Exception ex)
             {

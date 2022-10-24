@@ -28,7 +28,10 @@ namespace backend.Controllers
         {
             try
             {
-                return await _context.MatriculaAlumnos.ToListAsync();
+                return await _context.MatriculaAlumnos
+                    .Include(x => x.IdCursoNavigation)
+                    .Include(x => x.IdAlumnoNavigation)
+                    .ToListAsync();
             }
             catch (Exception ex)
             {
@@ -42,9 +45,15 @@ namespace backend.Controllers
         {
             try
             {
-                var matriculaAlumno = await _context.MatriculaAlumnos.FindAsync(id);
-                if (matriculaAlumno == null) return NotFound();
-                return matriculaAlumno;
+                var matriculaAlumno = await _context.MatriculaAlumnos
+                    .Where(x => x.Id == id)
+                    .Include(x => x.IdCursoNavigation)
+                    .Include(x => x.IdAlumnoNavigation)
+                    .ToListAsync();
+
+                if (matriculaAlumno == null || matriculaAlumno.Count == 0) return NotFound();
+
+                return Ok(matriculaAlumno);
             }
             catch (Exception ex)
             {
@@ -88,9 +97,12 @@ namespace backend.Controllers
             var curso = await _context.Cursos.FindAsync(matriculaAlumno.IdCurso);
             if (curso == null) return NotFound("El Curso no existe");
 
-            //Verificacion si se encuentra matriculado
+            //Comprobar si hay cupos 
+            if (curso.Cupos == 0) return Conflict("El curso ya se encuentra lleno.");
+
+            //Verificacion si se encuentra matriculado (Se puede hacer colocando llaves compuestas en la tabla)
             var verificacionMatricula = _context.MatriculaAlumnos.Where(x => x.IdCurso == matriculaAlumno.IdCurso && x.IdAlumno == matriculaAlumno.IdAlumno);
-            if (verificacionMatricula == null) return Conflict("El alumno ya se encuentra matriculado");
+            if (verificacionMatricula == null) return Conflict("El alumno ya se encuentra matriculado.");
 
             //Verificacion de Pre-Requisito de curso
             if (curso.IdCursoPre != null)
@@ -99,6 +111,8 @@ namespace backend.Controllers
                 if (validarPreCurso == null) return Conflict("El alumno no ha realizado el curso pre-requisito de " + curso.Nombre);
             }
 
+            alumno.CredtDisp += curso.Creditos;
+            curso.Cupos--;
             _context.MatriculaAlumnos.Add(matriculaAlumno);
             try
             {
@@ -119,8 +133,8 @@ namespace backend.Controllers
             return StatusCode(StatusCodes.Status201Created);
         }
 
-        // DELETE: api/MatriculaAlumnos/Completado/5
-        [HttpDelete("Completado/{id}")]
+        // DELETE: api/MatriculaAlumnos/5/Completado
+        [HttpDelete("{id}/Completado")]
         public async Task<IActionResult> DeleteMatriculaAlumnoCompletada(int id)
         {
             var matriculaAlumno = await _context.MatriculaAlumnos.FindAsync(id);
@@ -133,6 +147,11 @@ namespace backend.Controllers
                     IdCurso = matriculaAlumno.IdCurso,
                     IdAlumno = matriculaAlumno.IdAlumno
                 };
+
+                var alumno = await _context.Alumnos.FindAsync(matriculaAlumno.IdAlumno);
+                var curso = await _context.Cursos.FindAsync(matriculaAlumno.IdCurso);
+                alumno.CredtDisp -= curso.Creditos;
+                curso.Cupos--;
 
                 _context.CursosRealizados.Add(cursosRealizado);
                 _context.MatriculaAlumnos.Remove(matriculaAlumno);
@@ -147,8 +166,8 @@ namespace backend.Controllers
 
         }
 
-        // DELETE: api/MatriculaAlumnos/Realizado/5
-        [HttpDelete("Realizado/{id}")]
+        // DELETE: api/MatriculaAlumnos/5/Realizado
+        [HttpDelete("{id}/Realizado")]
         public async Task<IActionResult> DeleteMatriculaAlumnoRetirada(int id)
         {
             var matriculaAlumno = await _context.MatriculaAlumnos.FindAsync(id);
@@ -156,6 +175,11 @@ namespace backend.Controllers
             try
             {
                 _context.MatriculaAlumnos.Remove(matriculaAlumno);
+                var alumno = await _context.Alumnos.FindAsync(matriculaAlumno.IdAlumno);
+                var curso = await _context.Cursos.FindAsync(matriculaAlumno.IdCurso);
+                alumno.CredtDisp -= curso.Creditos;
+                curso.Cupos++;
+
                 await _context.SaveChangesAsync();
                 return NoContent();
             }

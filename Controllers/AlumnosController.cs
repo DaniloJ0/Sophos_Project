@@ -39,16 +39,16 @@ namespace backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Alumno>> GetAlumno(int id)
         {
-            var alumno = await _context.Alumnos.FindAsync(id);
-            if (alumno == null) return NotFound();
-
             try
             {
-                var cursosMatriculados = await _context.MatriculaAlumnos.Where(x => x.IdAlumno == id).ToListAsync();
-                var cursosRealizados = await _context.CursosRealizados.Where(x => x.IdAlumno == id).ToListAsync();
-                var departamento = _context.Facultads.Where(x => x.Id == alumno.IdDept).First().Name;
-                var datos = new { alumno.Nombre, alumno.Apellido, alumno.Semestre, alumno.CredtDisp, departamento, cursosMatriculados, cursosRealizados };
-                return StatusCode(StatusCodes.Status200OK, datos);
+                var alumno = await _context.Alumnos
+                    .Where(x => x.Id == id)
+                    .Include(x => x.MatriculaAlumnos)
+                    .Include(x => x.CursosRealizados)
+                    .ToListAsync();
+
+                if (alumno == null || alumno.Count == 0) return NotFound("Alumno no encontrado");
+                return StatusCode(StatusCodes.Status200OK, alumno);
             }
             catch (Exception ex)
             {

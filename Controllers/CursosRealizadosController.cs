@@ -28,7 +28,7 @@ namespace backend.Controllers
             try
             {
                 var cursosRealizado = await _context.CursosRealizados.ToListAsync();
-                return StatusCode(StatusCodes.Status200OK, cursosRealizado);
+                return Ok(cursosRealizado);
             }
             catch (Exception ex)
             {
@@ -42,10 +42,14 @@ namespace backend.Controllers
         {
             try
             {
-                var cursosRealizado = await _context.CursosRealizados.FindAsync(id);
-                if (cursosRealizado == null) return NotFound();
+                var cursosRealizado = await _context.CursosRealizados
+                    .Where(x => x.Id == id)
+                    .Include(x => x.IdCursoNavigation)
+                    .ToListAsync();
 
-                return StatusCode(StatusCodes.Status200OK, cursosRealizado);
+                if (cursosRealizado == null || cursosRealizado.Count == 0) return NotFound("El id no existe");
+
+                return Ok(cursosRealizado);
             }
             catch (Exception ex)
             {
@@ -57,12 +61,17 @@ namespace backend.Controllers
         [Route("Alumno/{id:int}")]
         public async Task<ActionResult<CursosRealizado>> GetCursosRealizadoAlumno(int id)
         {
-            List<CursosRealizado> cursosRealizado = new List<CursosRealizado>();
+            List<CursosRealizado> cursosRealizado = new();
             try
             {
-                cursosRealizado = await _context.CursosRealizados.Where(x => x.IdAlumno == id).ToListAsync();
+                cursosRealizado = await _context.CursosRealizados
+                    .Where(x => x.IdAlumno == id)
+                    .Include(x => x.IdCursoNavigation)
+                    .ToListAsync();
 
-                return StatusCode(StatusCodes.Status200OK, cursosRealizado);
+                if (cursosRealizado == null || cursosRealizado.Count == 0) return NotFound("No hay datos de ese alumno");
+
+                return Ok(cursosRealizado);
             }
             catch (Exception ex)
             {

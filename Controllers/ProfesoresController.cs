@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using backend.DBContext;
 using backend.Models;
+using Microsoft.CodeAnalysis.Operations;
+using Newtonsoft.Json.Linq;
 
 namespace backend.Controllers
 {
@@ -27,7 +29,9 @@ namespace backend.Controllers
         {
             try
             {
-                return await _context.Profesors.ToListAsync();
+                return await _context.Profesors
+                    .Include(x => x.IdDeptNavigation)
+                    .ToListAsync();
             }
             catch (Exception ex)
             {
@@ -40,20 +44,32 @@ namespace backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Profesor>> GetProfesor(int id)
         {
-            var profesor = await _context.Profesors.FindAsync(id);
-            if (profesor == null) return NotFound();
-            var cursos = await _context.Cursos.Where(x => x.IdProfesor == 2).ToListAsync();
-            var datos = new { profesor, cursos };
-            return StatusCode(StatusCodes.Status200OK, datos);
+            try
+            {
+                var profesor = await _context.Profesors
+                    .Where(x => x.Id == id)
+                    .Include(x => x.IdDeptNavigation)
+                    .Include(x => x.Cursos).ToListAsync();
+
+                if (profesor == null || profesor.Count == 0) return NotFound("El profesor no existe");
+                return StatusCode(StatusCodes.Status200OK, profesor);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
+            }
+
         }
 
 
         // PUT: api/Profesores/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProfesor(int id, Profesor profesor)
         {
-            if (id != profesor.Id) return BadRequest("Profesor no encontrado");
+            if (id != profesor.Id) return BadRequest("Id no concuerda con el parametro");
+            var profe = await _context.Profesors.FindAsync(id);
+            if (profe == null) return NotFound("Profesor no encontrado");
+            //Valida que no ingrese una facultad que no exista
             var facultad = await _context.Facultads.FindAsync(profesor.IdDept);
             if (facultad == null) return NotFound("El Id de la facultad no existe");
 
