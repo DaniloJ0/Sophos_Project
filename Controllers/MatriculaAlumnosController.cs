@@ -100,9 +100,13 @@ namespace backend.Controllers
             //Comprobar si hay cupos 
             if (curso.Cupos == 0) return Conflict("El curso ya se encuentra lleno.");
 
-            //Verificacion si se encuentra matriculado (Se puede hacer colocando llaves compuestas en la tabla)
+            //Verificacion si se encuentra matriculado *(Se puede hacer colocando llaves compuestas en la tabla)*
             var verificacionMatricula = _context.MatriculaAlumnos.Where(x => x.IdCurso == matriculaAlumno.IdCurso && x.IdAlumno == matriculaAlumno.IdAlumno);
             if (verificacionMatricula == null) return Conflict("El alumno ya se encuentra matriculado.");
+
+            //Verificacion si ya curso la materia
+            var verificacionCursoCursado = _context.CursosRealizados.Where(x => x.IdCurso == matriculaAlumno.IdCurso && x.IdAlumno == matriculaAlumno.IdAlumno);
+            if (verificacionCursoCursado == null) return Conflict("El alumno ya cursó esta materia.");
 
             //Verificacion de Pre-Requisito de curso
             if (curso.IdCursoPre != null)

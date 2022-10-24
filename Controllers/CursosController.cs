@@ -62,7 +62,6 @@ namespace backend.Controllers
         }
 
         // PUT: api/Cursos/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCurso(int id, Curso curso)
         {
@@ -95,11 +94,10 @@ namespace backend.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok("El curso se ha actualizado");
         }
 
         // POST: api/Cursos
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Curso>> PostCurso(Curso curso)
         {
@@ -138,7 +136,7 @@ namespace backend.Controllers
                 _context.Cursos.Remove(curso);
                 await _context.SaveChangesAsync();
 
-                return NoContent();
+                return Ok("El curso se ha eliminado");
             }
             catch (Exception ex)
             {

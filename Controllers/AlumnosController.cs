@@ -27,7 +27,7 @@ namespace backend.Controllers
         {
             try
             {
-                return await _context.Alumnos.ToListAsync();
+                return await _context.Alumnos.Include(x => x.IdDeptNavigation).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -44,7 +44,15 @@ namespace backend.Controllers
                 var alumno = await _context.Alumnos
                     .Where(x => x.Id == id)
                     .Include(x => x.MatriculaAlumnos)
+                    .Include(x => x.IdDeptNavigation)
                     .Include(x => x.CursosRealizados)
+                    .Select(x =>
+                        new
+                        {
+                            alumno = x,
+                            cursoRealizado = x.CursosRealizados
+                            .Select(x => x.IdCursoNavigation)
+                        })
                     .ToListAsync();
 
                 if (alumno == null || alumno.Count == 0) return NotFound("Alumno no encontrado");
