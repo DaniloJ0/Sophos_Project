@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using backend.DBContext;
 using backend.Models;
+using Microsoft.AspNetCore.Cors;
 
 namespace backend.Controllers
 {
+    [EnableCors("ReglasCors")]
     [Route("api/[controller]")]
     [ApiController]
     public class AlumnosController : ControllerBase
@@ -46,16 +48,9 @@ namespace backend.Controllers
                     .Include(x => x.MatriculaAlumnos)
                     .Include(x => x.IdDeptNavigation)
                     .Include(x => x.CursosRealizados)
-                    .Select(x =>
-                        new
-                        {
-                            alumno = x,
-                            cursoRealizado = x.CursosRealizados
-                            .Select(x => x.IdCursoNavigation)
-                        })
-                    .ToListAsync();
+                    .FirstOrDefaultAsync();
 
-                if (alumno == null || alumno.Count == 0) return NotFound("Alumno no encontrado");
+                if (alumno == null) return NotFound("Alumno no encontrado");
                 return StatusCode(StatusCodes.Status200OK, alumno);
             }
             catch (Exception ex)
@@ -81,7 +76,7 @@ namespace backend.Controllers
             {
                 if (!AlumnoExists(id))
                 {
-                    return NotFound();
+                    return NotFound("Alumno no encontrado");
                 }
                 else
                 {

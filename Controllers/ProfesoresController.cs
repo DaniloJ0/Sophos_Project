@@ -49,9 +49,10 @@ namespace backend.Controllers
                 var profesor = await _context.Profesors
                     .Where(x => x.Id == id)
                     .Include(x => x.IdDeptNavigation)
-                    .Include(x => x.Cursos).ToListAsync();
+                    .Include(x => x.Cursos)
+                    .FirstOrDefaultAsync();
 
-                if (profesor == null || profesor.Count == 0) return NotFound("El profesor no existe");
+                if (profesor == null) return NotFound("El profesor no existe");
                 return StatusCode(StatusCodes.Status200OK, profesor);
             }
             catch (Exception ex)
@@ -67,8 +68,7 @@ namespace backend.Controllers
         public async Task<IActionResult> PutProfesor(int id, Profesor profesor)
         {
             if (id != profesor.Id) return BadRequest("Id no concuerda con el parametro");
-            var profe = await _context.Profesors.FindAsync(id);
-            if (profe == null) return NotFound("Profesor no encontrado");
+            
             //Valida que no ingrese una facultad que no exista
             var facultad = await _context.Facultads.FindAsync(profesor.IdDept);
             if (facultad == null) return NotFound("El Id de la facultad no existe");
@@ -83,7 +83,7 @@ namespace backend.Controllers
             {
                 if (!ProfesorExists(id))
                 {
-                    return NotFound();
+                    return NotFound("Profesor no encontrado");
                 }
                 else
                 {

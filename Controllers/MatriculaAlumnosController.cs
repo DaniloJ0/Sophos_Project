@@ -29,8 +29,6 @@ namespace backend.Controllers
             try
             {
                 return await _context.MatriculaAlumnos
-                    .Include(x => x.IdCursoNavigation)
-                    .Include(x => x.IdAlumnoNavigation)
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -63,29 +61,29 @@ namespace backend.Controllers
         }
 
         // PUT: api/MatriculaAlumnos/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutMatriculaAlumno(int id, MatriculaAlumno matriculaAlumno)
-        {
-            if (id != matriculaAlumno.Id) return BadRequest();
-            _context.Entry(matriculaAlumno).State = EntityState.Modified;
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!MatriculaAlumnoExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> PutMatriculaAlumno(int id, MatriculaAlumno matriculaAlumno)
+        //{
+        //    if (id != matriculaAlumno.Id) return BadRequest("El id no concuerda con el parametro");
+        //    _context.Entry(matriculaAlumno).State = EntityState.Modified;
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        if (!MatriculaAlumnoExists(id))
+        //        {
+        //            return NotFound("La matricula no existe");
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         // POST: api/MatriculaAlumnos
         [HttpPost]

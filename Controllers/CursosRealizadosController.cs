@@ -45,9 +45,9 @@ namespace backend.Controllers
                 var cursosRealizado = await _context.CursosRealizados
                     .Where(x => x.Id == id)
                     .Include(x => x.IdCursoNavigation)
-                    .ToListAsync();
+                    .FirstOrDefaultAsync();
 
-                if (cursosRealizado == null || cursosRealizado.Count == 0) return NotFound("El id no existe");
+                if (cursosRealizado == null) return NotFound("El id no existe");
 
                 return Ok(cursosRealizado);
             }
@@ -82,79 +82,74 @@ namespace backend.Controllers
         }
 
         // PUT: api/CursosRealizados/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCursosRealizado(int id, CursosRealizado cursosRealizado)
-        {
-            if (id != cursosRealizado.Id)
-            {
-                return BadRequest();
-            }
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> PutCursosRealizado(int id, CursosRealizado cursosRealizado)
+        //{
+        //    if (id != cursosRealizado.Id) return BadRequest("El id no concuerda con el parametro");
 
-            _context.Entry(cursosRealizado).State = EntityState.Modified;
+        //    _context.Entry(cursosRealizado).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CursosRealizadoExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        if (!CursosRealizadoExists(id))
+        //        {
+        //            return NotFound("Id no encontrado");
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         // POST: api/CursosRealizados
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<CursosRealizado>> PostCursosRealizado(CursosRealizado cursosRealizado)
-        {
-            var alumno = await _context.Alumnos.FindAsync(cursosRealizado.IdAlumno);
-            if (alumno == null) return NotFound("El alumno no existe");
+        //[HttpPost]
+        //public async Task<ActionResult<CursosRealizado>> PostCursosRealizado(CursosRealizado cursosRealizado)
+        //{
+        //    var alumno = await _context.Alumnos.FindAsync(cursosRealizado.IdAlumno);
+        //    if (alumno == null) return NotFound("El alumno no existe");
 
-            var curso = await _context.Cursos.FindAsync(cursosRealizado.IdAlumno);
-            if (curso == null) return NotFound("El Curso no existe");
+        //    var curso = await _context.Cursos.FindAsync(cursosRealizado.IdAlumno);
+        //    if (curso == null) return NotFound("El Curso no existe");
 
-            try
-            {
-                _context.CursosRealizados.Add(cursosRealizado);
-                await _context.SaveChangesAsync();
-                return StatusCode(StatusCodes.Status201Created);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status501NotImplemented, new { mensaje = ex.Message });
-            }
-        }
+        //    try
+        //    {
+        //        _context.CursosRealizados.Add(cursosRealizado);
+        //        await _context.SaveChangesAsync();
+        //        return StatusCode(StatusCodes.Status201Created);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(StatusCodes.Status501NotImplemented, new { mensaje = ex.Message });
+        //    }
+        //}
 
         // DELETE: api/CursosRealizados/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCursosRealizado(int id)
-        {
-            var cursosRealizado = await _context.CursosRealizados.FindAsync(id);
-            if (cursosRealizado == null)
-            {
-                return NotFound();
-            }
-            try
-            {
-                _context.CursosRealizados.Remove(cursosRealizado);
-                await _context.SaveChangesAsync();
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status501NotImplemented, new { mensaje = ex.Message });
-            }
-        }
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> DeleteCursosRealizado(int id)
+        //{
+        //    var cursosRealizado = await _context.CursosRealizados.FindAsync(id);
+        //    if (cursosRealizado == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    try
+        //    {
+        //        _context.CursosRealizados.Remove(cursosRealizado);
+        //        await _context.SaveChangesAsync();
+        //        return NoContent();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(StatusCodes.Status501NotImplemented, new { mensaje = ex.Message });
+        //    }
+        //}
         private bool CursosRealizadoExists(int id)
         {
             return _context.CursosRealizados.Any(e => e.Id == id);

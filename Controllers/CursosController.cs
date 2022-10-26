@@ -44,12 +44,15 @@ namespace backend.Controllers
                 var curso = await _context.Cursos
                 .Where(x => x.Id == id)
                 .Include(x => x.IdProfesorNavigation)
-                .Include(x => x.MatriculaAlumnos)
                 .Include(x => x.IdPeriodoNavigation)
-                .ToListAsync();
-                if (curso == null || curso.Count == 0) return NotFound("Curso no encontrado");
+                .Select(x => new { infoCurso = x,
+                    Matriculados = x.MatriculaAlumnos
+                    .Select(y => y.IdAlumnoNavigation)})
+                    .FirstOrDefaultAsync();
 
-                var cursoPreRequisito = await _context.Cursos.FindAsync(curso.First().IdCursoPre);
+                if (curso == null) return NotFound("Curso no encontrado");
+
+                var cursoPreRequisito = await _context.Cursos.FindAsync(curso.infoCurso.IdCursoPre);
                 var preRequisito = cursoPreRequisito == null ? "No tiene pre-requisito" : cursoPreRequisito.Nombre;
                 var data = new { curso, preRequisito };
 
@@ -67,11 +70,10 @@ namespace backend.Controllers
         {
             if (id != curso.Id) return BadRequest("El Id no concuerda con el parametro");
 
-            var existCurso = await _context.Cursos.FindAsync(id);
-            if (existCurso == null) return NotFound("Curso no encontrado");
-
-            var profesor = await _context.Profesors.FindAsync(curso.IdProfesor);
-            if (profesor == null) return NotFound("El profesor no existe");
+            if (curso.IdProfesor != null) {
+                var profesor = await _context.Profesors.FindAsync(curso.IdProfesor);
+                if (profesor == null) return NotFound("El profesor no existe");
+            }
 
             var periodo = await _context.Periodos.FindAsync(curso.IdPeriodo);
             if (periodo == null) return NotFound("El Periodo no existe");
@@ -86,7 +88,7 @@ namespace backend.Controllers
             {
                 if (!CursoExists(id))
                 {
-                    return NotFound();
+                    return NotFound("El curso no existe");
                 }
                 else
                 {
@@ -101,8 +103,11 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<ActionResult<Curso>> PostCurso(Curso curso)
         {
-            var profesor = await _context.Profesors.FindAsync(curso.IdProfesor);
-            if (profesor == null) return NotFound("El profesor no existe");
+            if(curso.IdProfesor != null)
+            {
+                var profesor = await _context.Profesors.FindAsync(curso.IdProfesor);
+                if (profesor == null) return NotFound("El profesor no existe");
+            }
 
             var periodo = await _context.Periodos.FindAsync(curso.IdPeriodo);
             if (periodo == null) return NotFound("El Periodo no existe");

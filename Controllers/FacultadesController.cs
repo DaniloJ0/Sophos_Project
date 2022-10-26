@@ -56,7 +56,7 @@ namespace backend.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutFacultad(int id, Facultad facultad)
         {
-            if (id != facultad.Id) return BadRequest();
+            if (id != facultad.Id) return BadRequest("El id no concuerda con el parametro");
 
             _context.Entry(facultad).State = EntityState.Modified;
 
@@ -76,7 +76,7 @@ namespace backend.Controllers
                 }
             }
 
-            return StatusCode(StatusCodes.Status202Accepted);
+            return Ok();
         }
 
         // POST: api/Facultades

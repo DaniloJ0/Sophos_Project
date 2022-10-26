@@ -29,7 +29,7 @@ namespace backend.Models
         [Column("cupos")]
         public int Cupos { get; set; }
         [Column("id_profesor")]
-        public int IdProfesor { get; set; }
+        public int? IdProfesor { get; set; }
         [Column("id_periodo")]
         public int IdPeriodo { get; set; }
         [Column("id_curso_pre")]
@@ -37,10 +37,10 @@ namespace backend.Models
 
         [ForeignKey("IdPeriodo")]
         [InverseProperty("Cursos")]
-        public virtual Periodo IdPeriodoNavigation { get; set; } = null!;
+        public virtual Periodo? IdPeriodoNavigation { get; set; }
         [ForeignKey("IdProfesor")]
         [InverseProperty("Cursos")]
-        public virtual Profesor IdProfesorNavigation { get; set; } = null!;
+        public virtual Profesor? IdProfesorNavigation { get; set; }
 
         [InverseProperty("IdCursoNavigation")]
         public virtual ICollection<MatriculaAlumno> MatriculaAlumnos { get; set; }
