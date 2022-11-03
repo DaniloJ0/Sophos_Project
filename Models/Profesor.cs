@@ -41,10 +41,8 @@ namespace backend.Models
 
         [ForeignKey("IdDept")]
         [InverseProperty("Profesors")]
-        [JsonIgnore]
-        public virtual Facultad? IdDeptNavigation { get; set; } // = null!;
+        public virtual Facultad? IdDeptNavigation { get; set; }
         [InverseProperty("IdProfesorNavigation")]
-        [JsonIgnore]
         public virtual ICollection<Curso> Cursos { get; set; }
     }
 }

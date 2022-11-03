@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using backend.DBContext;
 using backend.Models;
+using Microsoft.AspNetCore.Cors;
 
 namespace backend.Controllers
 {
+    [EnableCors("ReglasCors")]
     [Route("api/[controller]")]
     [ApiController]
     public class AlumnosController : ControllerBase
@@ -27,7 +29,7 @@ namespace backend.Controllers
         {
             try
             {
-                return await _context.Alumnos.ToListAsync();
+                return await _context.Alumnos.Include(x => x.IdDeptNavigation).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -39,16 +41,31 @@ namespace backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Alumno>> GetAlumno(int id)
         {
-            var alumno = await _context.Alumnos.FindAsync(id);
-            if (alumno == null) return NotFound();
-
             try
             {
-                var cursosMatriculados = await _context.MatriculaAlumnos.Where(x => x.IdAlumno == id).ToListAsync();
-                var cursosRealizados = await _context.CursosRealizados.Where(x => x.IdAlumno == id).ToListAsync();
-                var departamento = _context.Facultads.Where(x => x.Id == alumno.IdDept).First().Name;
-                var datos = new { alumno.Nombre, alumno.Apellido, alumno.Semestre, alumno.CredtDisp, departamento, cursosMatriculados, cursosRealizados };
-                return StatusCode(StatusCodes.Status200OK, datos);
+                //var alumno = await _context.Alumnos
+                //    .Where(x => x.Id == id)
+                //    .Include(x => x.MatriculaAlumnos)
+                //    .Include(x => x.IdDeptNavigation)
+                //    .Include(x => x.CursosRealizados)
+                //    .FirstOrDefaultAsync();
+
+                var alumno = await _context.Alumnos
+                    .Where(x => x.Id == id)
+                    .Include(x => x.IdDeptNavigation)
+                    .Include(x => x.MatriculaAlumnos)
+                    .Select(x => new
+                    {
+                        infoAlumno = x,
+                        cursosMatriculados = x.MatriculaAlumnos
+                        .Select(y => y.IdCursoNavigation),
+                        cursoRealizados = x.CursosRealizados
+                        .Select(y => y.IdCursoNavigation)
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (alumno == null) return NotFound("Alumno no encontrado");
+                return StatusCode(StatusCodes.Status200OK, alumno);
             }
             catch (Exception ex)
             {
@@ -73,7 +90,7 @@ namespace backend.Controllers
             {
                 if (!AlumnoExists(id))
                 {
-                    return NotFound();
+                    return NotFound("Alumno no encontrado");
                 }
                 else
                 {
@@ -106,9 +123,15 @@ namespace backend.Controllers
         public async Task<IActionResult> DeleteAlumno(int id)
         {
             var alumno = await _context.Alumnos.FindAsync(id);
-            if (alumno == null) return NotFound();
+            if (alumno == null) return NotFound("Alumno no encontrado");
             try
             {
+                var matriculaAlumnos = await _context.MatriculaAlumnos.Where(x => x.IdAlumno == id).ToListAsync();
+                _context.MatriculaAlumnos.RemoveRange(matriculaAlumnos);
+
+                var cursosRealizados = await _context.CursosRealizados.Where(x => x.IdAlumno == id).ToListAsync();
+                _context.CursosRealizados.RemoveRange(cursosRealizados);
+
                 _context.Alumnos.Remove(alumno);
                 await _context.SaveChangesAsync();
 

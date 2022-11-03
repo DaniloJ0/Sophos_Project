@@ -42,8 +42,8 @@ namespace backend.Controllers
             try
             {
                 var periodo = await _context.Periodos.FindAsync(id);
-                if (periodo == null) return NotFound();
-                return StatusCode(StatusCodes.Status200OK, periodo);
+                if (periodo == null) return NotFound("Periodo no encontrado");
+                return Ok(periodo);
             }
             catch (Exception ex)
             {
@@ -56,7 +56,7 @@ namespace backend.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPeriodo(int id, Periodo periodo)
         {
-            if (id != periodo.Id) return BadRequest();
+            if (id != periodo.Id) return BadRequest("El id no concuerda con el parametro");
             _context.Entry(periodo).State = EntityState.Modified;
             try
             {
@@ -66,7 +66,7 @@ namespace backend.Controllers
             {
                 if (!PeriodoExists(id))
                 {
-                    return NotFound();
+                    return NotFound("El periodo no existe");
                 }
                 else
                 {

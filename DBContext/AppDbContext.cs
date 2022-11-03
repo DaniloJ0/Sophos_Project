@@ -63,12 +63,17 @@ namespace backend.DBContext
                     .HasForeignKey(d => d.IdAlumno)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_cursos_realizados_alumno");
+
+                //add
+                entity.HasOne(d => d.IdCursoNavigation)
+                    .WithMany(p => p.CursosRealizados)
+                    .HasForeignKey(d => d.IdCurso)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_cursos_realizados_curso");
             });
 
             modelBuilder.Entity<MatriculaAlumno>(entity =>
             {
-                //entity.Property(e => e.Id).ValueGeneratedNever();
-
                 entity.Property(e => e.IdCurso).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.IdAlumnoNavigation)
