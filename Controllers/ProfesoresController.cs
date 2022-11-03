@@ -121,6 +121,12 @@ namespace backend.Controllers
             if (profesor == null) return NotFound();
             try
             {
+                var cursosProfesor = await _context.Cursos.Where(x => x.IdProfesor == id).ToListAsync();
+                foreach(var cursosProf in cursosProfesor)
+                {
+                    cursosProf.IdProfesor = null;
+                }
+
                 _context.Profesors.Remove(profesor);
                 await _context.SaveChangesAsync();
                 return NoContent();

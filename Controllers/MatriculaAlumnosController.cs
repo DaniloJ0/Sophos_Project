@@ -153,7 +153,7 @@ namespace backend.Controllers
                 var alumno = await _context.Alumnos.FindAsync(matriculaAlumno.IdAlumno);
                 var curso = await _context.Cursos.FindAsync(matriculaAlumno.IdCurso);
                 alumno.CredtDisp -= curso.Creditos;
-                curso.Cupos--;
+                curso.Cupos++;
 
                 _context.CursosRealizados.Add(cursosRealizado);
                 _context.MatriculaAlumnos.Remove(matriculaAlumno);

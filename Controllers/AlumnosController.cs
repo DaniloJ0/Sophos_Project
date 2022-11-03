@@ -43,11 +43,25 @@ namespace backend.Controllers
         {
             try
             {
+                //var alumno = await _context.Alumnos
+                //    .Where(x => x.Id == id)
+                //    .Include(x => x.MatriculaAlumnos)
+                //    .Include(x => x.IdDeptNavigation)
+                //    .Include(x => x.CursosRealizados)
+                //    .FirstOrDefaultAsync();
+
                 var alumno = await _context.Alumnos
                     .Where(x => x.Id == id)
-                    .Include(x => x.MatriculaAlumnos)
                     .Include(x => x.IdDeptNavigation)
-                    .Include(x => x.CursosRealizados)
+                    .Include(x => x.MatriculaAlumnos)
+                    .Select(x => new
+                    {
+                        infoAlumno = x,
+                        cursosMatriculados = x.MatriculaAlumnos
+                        .Select(y => y.IdCursoNavigation),
+                        cursoRealizados = x.CursosRealizados
+                        .Select(y => y.IdCursoNavigation)
+                    })
                     .FirstOrDefaultAsync();
 
                 if (alumno == null) return NotFound("Alumno no encontrado");
@@ -109,9 +123,15 @@ namespace backend.Controllers
         public async Task<IActionResult> DeleteAlumno(int id)
         {
             var alumno = await _context.Alumnos.FindAsync(id);
-            if (alumno == null) return NotFound();
+            if (alumno == null) return NotFound("Alumno no encontrado");
             try
             {
+                var matriculaAlumnos = await _context.MatriculaAlumnos.Where(x => x.IdAlumno == id).ToListAsync();
+                _context.MatriculaAlumnos.RemoveRange(matriculaAlumnos);
+
+                var cursosRealizados = await _context.CursosRealizados.Where(x => x.IdAlumno == id).ToListAsync();
+                _context.CursosRealizados.RemoveRange(cursosRealizados);
+
                 _context.Alumnos.Remove(alumno);
                 await _context.SaveChangesAsync();
 

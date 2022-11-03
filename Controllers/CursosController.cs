@@ -27,7 +27,7 @@ namespace backend.Controllers
         {
             try
             {
-                return await _context.Cursos.ToListAsync();
+                return await _context.Cursos.Include(x => x.MatriculaAlumnos).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -135,9 +135,14 @@ namespace backend.Controllers
         {
             var curso = await _context.Cursos.FindAsync(id);
             if (curso == null) return NotFound();
-
             try
             {
+                var matriculaCurso = await _context.MatriculaAlumnos.Where(x => x.IdCurso == id).ToListAsync();
+                _context.MatriculaAlumnos.RemoveRange(matriculaCurso);
+
+                var cursosRealizados = await _context.CursosRealizados.Where(x => x.IdCurso == id).ToListAsync();
+                _context.CursosRealizados.RemoveRange(cursosRealizados);
+
                 _context.Cursos.Remove(curso);
                 await _context.SaveChangesAsync();
 
